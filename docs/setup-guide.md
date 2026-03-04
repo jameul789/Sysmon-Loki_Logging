@@ -9,3 +9,4 @@ Invoke-WebRequest https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-confi
 
 cd C:\sysmon
 .\Sysmon64.exe -accepteula -i sysmon-config.xml
+
