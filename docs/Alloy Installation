@@ -1,0 +1,72 @@
+# install-alloy.ps1
+# Installs Grafana Alloy (Windows), deploys config.alloy from this repo, and restarts the Alloy service.
+# Run in an elevated PowerShell.
+
+$ErrorActionPreference = "Stop"
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+function Assert-Admin {
+  $isAdmin = ([Security.Principal.WindowsPrincipal] `
+    [Security.Principal.WindowsIdentity]::GetCurrent() `
+  ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+  if (-not $isAdmin) { throw "Run this script in an elevated PowerShell (Administrator)." }
+}
+
+Assert-Admin
+
+# --- Paths ---
+$repoConfig = Join-Path $PSScriptRoot "config.alloy"
+if (-not (Test-Path $repoConfig)) {
+  throw "Missing config file: $repoConfig (ensure config.alloy is in the same folder as this script)"
+}
+
+$dl = "C:\Temp\alloy"
+New-Item -ItemType Directory -Force $dl | Out-Null
+
+$installer = Join-Path $dl "alloy-installer-windows-amd64.exe"
+$installerUrl = "https://github.com/grafana/alloy/releases/latest/download/alloy-installer-windows-amd64.exe"
+
+# --- Download installer (IWR then BITS fallback) ---
+try {
+  Invoke-WebRequest -Uri $installerUrl -OutFile $installer -UseBasicParsing
+} catch {
+  # BITS is often more reliable on flaky networks
+  Start-BitsTransfer -Source $installerUrl -Destination $installer
+}
+
+# --- Install Alloy silently ---
+& $installer /S | Out-Null
+
+# --- Ensure config destination exists ---
+$destDir = "C:\ProgramData\GrafanaLabs\Alloy"
+$bookmarkDir = Join-Path $destDir "bookmarks"
+New-Item -ItemType Directory -Force $bookmarkDir | Out-Null
+
+$destConfig = Join-Path $destDir "config.alloy"
+Copy-Item -Force $repoConfig $destConfig
+
+# --- Point the Alloy service at ProgramData config (avoids Program Files editing issues) ---
+# We set the service ImagePath directly to run alloy.exe with our config path.
+$alloyExe = "C:\Program Files\GrafanaLabs\Alloy\alloy.exe"
+if (-not (Test-Path $alloyExe)) {
+  throw "Alloy executable not found at expected path: $alloyExe"
+}
+
+$svcKey = "HKLM:\SYSTEM\CurrentControlSet\Services\Alloy"
+if (-not (Test-Path $svcKey)) {
+  throw "Alloy service registry key not found. Is the service installed?"
+}
+
+Set-ItemProperty -Path $svcKey -Name ImagePath -Value "`"$alloyExe`" run `"$destConfig`""
+
+# --- Restart Alloy service ---
+# If service doesn't exist yet or is named differently, this will error (which is good signal).
+Restart-Service -Name "Alloy" -Force
+
+# --- Basic status output ---
+Get-Service -Name "Alloy" | Format-Table Status, Name, DisplayName
+
+Write-Host "Alloy installed and configured."
+Write-Host "Config deployed to: $destConfig"
+Write-Host "Bookmark directory: $bookmarkDir"
