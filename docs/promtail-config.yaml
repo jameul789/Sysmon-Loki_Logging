@@ -1,37 +1,23 @@
-server:
-  http_listen_port: 9080
-  grpc_listen_port: 0
+loki.write "main" {
+  endpoint {
+    url = "http://192.168.100.138:3100/loki/api/v1/push"
+  }
+}
 
-positions:
-  filename: C:\ProgramData\promtail\positions.yaml
+loki.source.windowsevent "sysmon_filtered" {
+  eventlog_name = "Microsoft-Windows-Sysmon/Operational"
 
-clients:
-  - url: http://192.168.100.138:3100/loki/api/v1/push
+  # Ship only selected Sysmon Event IDs
+  xpath_query = "*[System[(EventID=1 or EventID=3 or EventID=8 or EventID=10 or EventID=12 or EventID=13 or EventID=14 or EventID=15)]]"
 
-scrape_configs:
-  - job_name: windows-security
-    windows_events:
-      eventlog_name: Security
-      xpath_query: "*"
-      bookmark_path: C:\ProgramData\promtail\bookmarks\security.xml
-      labels:
-        job: windows-security
-        host: jam-w11-01
+  # Read-state tracking for this channel
+  bookmark_path = "C:\\ProgramData\\GrafanaLabs\\Alloy\\bookmarks\\sysmon.xml"
 
-  - job_name: windows-system
-    windows_events:
-      eventlog_name: System
-      xpath_query: "*"
-      bookmark_path: C:\ProgramData\promtail\bookmarks\system.xml
-      labels:
-        job: windows-system
-        host: jam-w11-01
+  labels = {
+    job  = "windows"
+    host = env("COMPUTERNAME")
+    log  = "sysmon"
+  }
 
-  - job_name: windows-application
-    windows_events:
-      eventlog_name: Application
-      xpath_query: "*"
-      bookmark_path: C:\ProgramData\promtail\bookmarks\application.xml
-      labels:
-        job: windows-application
-        host: jam-w11-01
+  forward_to = [loki.write.main.receiver]
+}
