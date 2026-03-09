@@ -53,9 +53,17 @@ Start-Process -FilePath $installer -ArgumentList "/S" -Wait -NoNewWindow
 Start-Sleep -Seconds 3
 
 # --- Verify install succeeded ---
-$alloyExe = "C:\Program Files\GrafanaLabs\Alloy\alloy.exe"
-if (-not (Test-Path $alloyExe)) {
-  throw "Alloy installation failed — alloy.exe not found at expected path: $alloyExe"
+$installDir = "C:\Program Files\GrafanaLabs\Alloy"
+
+$candidateBinaries = @(
+  (Join-Path $installDir "alloy.exe"),
+  (Join-Path $installDir "alloy-windows-amd64.exe")
+)
+
+$alloyExe = $candidateBinaries | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+if (-not $alloyExe) {
+  throw "Alloy executable not found. Checked: $($candidateBinaries -join ', ')"
 }
 
 # Ensure the Alloy service exists (installer should create it)
