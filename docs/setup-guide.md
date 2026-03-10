@@ -10,13 +10,4 @@ Invoke-WebRequest https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-confi
 cd C:\sysmon
 .\Sysmon64.exe -accepteula -i sysmon-config.xml
 
-# Sysmon → Loki Logging Setup
 
-This repository explains how to send Sysmon logs to Loki using Grafana Alloy.
-
-## Documentation
-
-- [Setup Guide](docs/setup-guide.md)
-- [Alloy Installation](docs/alloy-installation.md)
-- [Alloy Configuration](docs/alloy-config.md)
-- [Sysmon Installation](docs/sysmon-installation.md)
