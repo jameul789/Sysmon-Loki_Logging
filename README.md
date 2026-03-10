@@ -8,6 +8,6 @@ This repository explains how to send Sysmon logs to Loki using Grafana Alloy.
 ## Documentation
 
 - [Setup Guide](docs/setup-guide.md)
-- [Alloy Installation](docs/alloy-installation.md)
-- [Alloy Configuration](docs/alloy-config.md)
+- [Alloy Installation](docs/alloy-installation.ps1)
+- [Alloy Configuration](docs/config.alloy)
 - [Sysmon Installation](docs/sysmon-installation.md)
