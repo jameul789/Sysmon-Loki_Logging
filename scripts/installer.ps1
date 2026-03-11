@@ -4,7 +4,8 @@ param(
     [string]$SysmonConfigUrl = "https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml",
     [int]$SysmonInstallAttempts = 3,
     [int]$HttpRetryCount = 12,
-    [int]$HttpRetryDelaySeconds = 5
+    [int]$HttpRetryDelaySeconds = 5,
+    [switch]$ForceRewriteAlloyConfig
 )
 
 Set-StrictMode -Version Latest
@@ -252,7 +253,8 @@ function Write-AlloyConfig {
     param(
         [Parameter(Mandatory)][string]$ConfigPath,
         [Parameter(Mandatory)][string]$LokiPushUrl,
-        [Parameter(Mandatory)][string]$BookmarkPath
+        [Parameter(Mandatory)][string]$BookmarkPath,
+        [switch]$Force
     )
 
     Write-Section "Writing Alloy configuration"
@@ -281,6 +283,12 @@ loki.source.windowsevent "sysmon_filtered" {
 
     $parent = Split-Path -Path $ConfigPath -Parent
     Ensure-Directory $parent
+
+    if ((Test-Path -LiteralPath $ConfigPath) -and (-not $Force)) {
+        Write-Host "Existing Alloy config found at $ConfigPath. Leaving it unchanged."
+        return
+    }
+
     Set-Content -Path $ConfigPath -Value $config -Encoding UTF8
 
     if (-not (Test-Path -LiteralPath $ConfigPath)) {
@@ -291,6 +299,8 @@ loki.source.windowsevent "sysmon_filtered" {
     if ([string]::IsNullOrWhiteSpace($content)) {
         throw "Alloy config file is empty: $ConfigPath"
     }
+
+    Write-Host "Alloy config written to: $ConfigPath"
 }
 
 function Get-AlloyExePath {
@@ -686,7 +696,7 @@ try {
     Ensure-Directory $alloyDataDir
 
     Install-OrUpdate-Sysmon -SysmonDir $sysmonDir -ConfigUrl $SysmonConfigUrl -InstallAttempts $SysmonInstallAttempts
-    Write-AlloyConfig -ConfigPath $alloyConfigPath -LokiPushUrl $lokiPushUrl -BookmarkPath $bookmarkPath
+    Write-AlloyConfig -ConfigPath $alloyConfigPath -LokiPushUrl $lokiPushUrl -BookmarkPath $bookmarkPath -Force:$ForceRewriteAlloyConfig
     Install-OrUpdate-Alloy -LiveConfigPath $alloyConfigPath -DataDir $alloyDataDir
     Test-HttpEndpoint -Url $lokiReadyUrl -RetryCount $HttpRetryCount -DelaySeconds $HttpRetryDelaySeconds -FriendlyName "Loki"
     Test-SysmonChannel
