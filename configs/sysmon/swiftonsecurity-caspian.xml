@@ -72,52 +72,62 @@
 
 	<EventFiltering>
 
-	<!-- SECTION: Microsoft:Edge -->
-<CommandLine condition="begin with">"C:\Program Files (x86)\Microsoft\Edge Dev\Application\msedge.exe" --type=</CommandLine>
-<CommandLine condition="begin with">"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --type=</CommandLine>
-<CommandLine condition="begin with">"C:\Program Files\Microsoft\Edge\Application\msedge.exe" --type=</CommandLine>
+	<!--SYSMON EVENT ID 1 : PROCESS CREATION [ProcessCreate]-->
+<RuleGroup name="ProcessCreationFiltering" groupRelation="or">
 
-<!-- SECTION: Microsoft:WebView2 -->
-<CommandLine condition="begin with">"C:\Program Files (x86)\Microsoft\EdgeWebView\Application\msedgewebview2.exe" --type=</CommandLine>
-<CommandLine condition="begin with">"C:\Program Files\Microsoft\EdgeWebView\Application\msedgewebview2.exe" --type=</CommandLine>
+    <!-- Log suspicious process launches -->
+    <ProcessCreate onmatch="include">
 
-<!-- SECTION: Microsoft:dotNet -->
-<CommandLine condition="begin with">C:\Windows\Microsoft.NET\Framework\v4.0.30319\ngen.exe</CommandLine>
-<CommandLine condition="begin with">C:\WINDOWS\Microsoft.NET\Framework64\v4.0.30319\Ngen.exe</CommandLine>
-<CommandLine condition="begin with">C:\Windows\Microsoft.NET\Framework\v4.0.30319\ngentask.exe</CommandLine>
-<CommandLine condition="begin with">C:\WINDOWS\Microsoft.NET\Framework64\v4.0.30319\ngentask.exe</CommandLine>
-<Image condition="is">C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorsvw.exe</Image>
-<Image condition="is">C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorsvw.exe</Image>
-<Image condition="is">C:\Windows\Microsoft.Net\Framework64\v3.0\WPF\PresentationFontCache.exe</Image>
-<ParentCommandLine condition="begin with">C:\Windows\Microsoft.NET\Framework64\v4.0.30319\ngentask.exe</ParentCommandLine>
-<ParentImage condition="is">C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorsvw.exe</ParentImage>
-<ParentImage condition="is">C:\Windows\Microsoft.NET\Framework64\v4.0.30319\ngentask.exe</ParentImage>
-<ParentImage condition="is">C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorsvw.exe</ParentImage>
-<ParentImage condition="is">C:\Windows\Microsoft.NET\Framework\v4.0.30319\ngentask.exe</ParentImage>
+        <!-- Processes launched from user writable locations -->
+        <Image condition="begin with">C:\Users\</Image>
+        <Image condition="begin with">C:\ProgramData\</Image>
+        <Image condition="begin with">C:\Windows\Temp\</Image>
+        <Image condition="begin with">C:\Temp\</Image>
 
-<!-- SECTION: Microsoft:Office -->
-<Image condition="is">C:\Program Files\Microsoft Office\Office16\MSOSYNC.EXE</Image>
-<Image condition="is">C:\Program Files (x86)\Microsoft Office\Office16\MSOSYNC.EXE</Image>
-<Image condition="is">C:\Program Files\Common Files\Microsoft Shared\OfficeSoftwareProtectionPlatform\OSPPSVC.EXE</Image>
-<Image condition="is">C:\Program Files\Microsoft Office\Office16\msoia.exe</Image>
-<Image condition="is">C:\Program Files (x86)\Microsoft Office\root\Office16\officebackgroundtaskhandler.exe</Image>
+        <!-- LOLBins -->
+        <Image condition="image">powershell.exe</Image>
+        <Image condition="image">cmd.exe</Image>
+        <Image condition="image">wscript.exe</Image>
+        <Image condition="image">cscript.exe</Image>
+        <Image condition="image">mshta.exe</Image>
+        <Image condition="image">rundll32.exe</Image>
+        <Image condition="image">regsvr32.exe</Image>
+        <Image condition="image">wmic.exe</Image>
+        <Image condition="image">certutil.exe</Image>
+        <Image condition="image">bitsadmin.exe</Image>
+        <Image condition="image">psexec.exe</Image>
 
-<!-- SECTION: Microsoft:Office:Click2Run -->
-<Image condition="is">C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeC2RClient.exe</Image>
-<ParentImage condition="is">C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe</ParentImage>
-<ParentImage condition="is">C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeC2RClient.exe</ParentImage>
+        <!-- Suspicious parent-child combinations -->
+        <ParentImage condition="image">winword.exe</ParentImage>
+        <ParentImage condition="image">excel.exe</ParentImage>
+        <ParentImage condition="image">outlook.exe</ParentImage>
 
-<!-- SECTION: Microsoft:User apps -->
-<Image condition="end with">\OneDrive.exe</Image>
-<Image condition="end with">\ms-teams.exe</Image>
-<Image condition="end with">\Teams.exe</Image>
+    </ProcessCreate>
 
-<!-- SECTION: Windows: Media player -->
-<Image condition="is">C:\Program Files\Windows Media Player\wmpnscfg.exe</Image>
+    <!-- Exclude noisy trusted processes -->
+    <ProcessCreate onmatch="exclude">
 
-<!-- SECTION: Google -->
-<CommandLine condition="begin with">"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --type=</CommandLine>
-<CommandLine condition="begin with">"C:\Program Files\Google\Chrome\Application\chrome.exe" --type=</CommandLine>
+        <!-- Browsers -->
+        <Image condition="image">chrome.exe</Image>
+        <Image condition="image">msedge.exe</Image>
+        <Image condition="image">firefox.exe</Image>
+
+        <!-- Windows background processes -->
+        <Image condition="image">svchost.exe</Image>
+        <Image condition="image">services.exe</Image>
+        <Image condition="image">lsass.exe</Image>
+        <Image condition="image">winlogon.exe</Image>
+
+        <!-- Office background tasks -->
+        <Image condition="image">officebackgroundtaskhandler.exe</Image>
+
+        <!-- OneDrive -->
+        <Image condition="image">onedrive.exe</Image>
+
+    </ProcessCreate>
+
+</RuleGroup>
+
 	<!--SYSMON EVENT ID 2 : FILE CREATION TIME RETROACTIVELY CHANGED IN THE FILESYSTEM [FileCreateTime]-->
 		<!--COMMENT:	[ https://attack.mitre.org/wiki/Technique/T1099 ] -->
 
@@ -189,7 +199,6 @@
 			<Image condition="image">notepad.exe</Image> <!--Windows: [ https://secrary.com/ReversingMalware/CoinMiner/ ] [ https://blog.cobaltstrike.com/2013/08/08/why-is-notepad-exe-connecting-to-the-internet/ ] -->
 			<Image condition="image">nslookup.exe</Image> <!--Windows: Retrieve data over DNS -->
 			<Image condition="image">powershell.exe</Image> <!--Windows: PowerShell interface-->
-
 			<Image condition="image">powershell_ise.exe</Image> <!--Windows: PowerShell interface-->
 			<Image condition="image">qprocess.exe</Image> <!--Windows: [ https://www.first.org/resources/papers/conf2017/APT-Log-Analysis-Tracking-Attack-Tools-by-Audit-Policy-and-Sysmon.pdf ] -->
 			<Image condition="image">qwinsta.exe</Image> <!--Windows: Query remote sessions | Credit @ion-storm -->
@@ -1086,4 +1095,3 @@
 
 	</EventFiltering>
 </Sysmon>
-
