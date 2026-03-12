@@ -1,7 +1,7 @@
 param(
     [string]$LokiHost = "192.168.100.138",
     [int]$LokiPort = 3100,
-    [string]$SysmonConfigUrl = "https://raw.githubusercontent.com/SwiftOnSecurity/sysmon-config/master/sysmonconfig-export.xml",
+    [string]$SysmonConfigUrl = "https://raw.githubusercontent.com/jameul789/Sysmon-Loki_Logging/main/configs/sysmon/swiftonsecurity-caspian.xml",
     [int]$SysmonInstallAttempts = 3,
     [int]$HttpRetryCount = 12,
     [int]$HttpRetryDelaySeconds = 5,
@@ -189,7 +189,7 @@ function Install-OrUpdate-Sysmon {
 
     $zipPath = Join-Path $SysmonDir "Sysmon.zip"
     $sysmonExe = Join-Path $SysmonDir "Sysmon64.exe"
-    $sysmonConfig = Join-Path $SysmonDir "sysmon-config.xml"
+    $sysmonConfig = Join-Path $SysmonDir "swiftonsecurity-caspian.xml"
     $sysmonZipUrl = "https://download.sysinternals.com/files/Sysmon.zip"
 
     Download-File -Url $sysmonZipUrl -Destination $zipPath
