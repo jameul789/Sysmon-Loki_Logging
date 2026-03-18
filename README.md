@@ -29,48 +29,48 @@ Each endpoint performs the following:
 
 ## Key Design Principles
 
-* **Selective logging**
+- **Selective logging**
   Only relevant security events are captured to reduce noise.
 
-* **Lightweight deployment**
+- **Lightweight deployment**
   Designed to minimise system and network impact on endpoints.
 
-* **Centralised visibility**
+- **Centralised visibility**
   All logs are aggregated in Loki and accessible via Grafana.
 
-* **Automated deployment**
+- **Automated deployment**
   Installation and removal scripts support scalable rollout (e.g. via PDQ Deploy).
 
 ---
 
 ## Components
 
-* **Sysmon** – Endpoint telemetry collection
-* **Grafana Alloy** – Log collection and forwarding
-* **Loki** – Log aggregation and storage
-* **Grafana** – Visualisation and querying
+- **Sysmon** : Endpoint telemetry collection
+- **Grafana Alloy** : Log collection and forwarding
+- **Loki** : Log aggregation and storage
+- **Grafana** : Visualisation and querying
 
 ---
 
 ## Configuration
 
-* Sysmon is deployed with a **custom configuration** derived from SwiftOnSecurity’s baseline, tuned to reduce excessive logging.
-* Alloy configuration is currently **embedded within the installer script**.
-* A local copy of the Alloy configuration is written to the endpoint to allow further modification if required.
+- Sysmon is deployed with a **custom configuration** derived from SwiftOnSecurity’s baseline, tuned to reduce excessive logging.
+- Alloy configuration is currently **embedded within the installer script**.
+- A local copy of the Alloy configuration is written to the endpoint to allow further modification if required.
 
 ---
 
 ## Prerequisites
 
-* A server capable of running:
+- A server capable of running:
 
-  * Grafana
-  * Loki
-* Loki accessible over the network (default port: `3100`)
-* Windows endpoints with:
+  - Grafana
+  - Loki
+- Loki accessible over the network (default port: `3100`)
+- Windows endpoints with:
 
-  * Administrator privileges
-  * Network access to the Loki instance
+  - Administrator privileges
+  - Network access to the Loki instance
 
 ---
 
@@ -78,16 +78,16 @@ Each endpoint performs the following:
 
 This project is intended to:
 
-* Improve visibility into endpoint behaviour
-* Provide a foundation for detection and monitoring
-* Enable centralised log analysis using Grafana
+- Improve visibility into endpoint behaviour
+- Provide a foundation for detection and monitoring
+- Enable centralised log analysis using Grafana
 
 ---
 
 ## Future Improvements
 
-* Alerting based on key security events
-* Expanded Windows Event Log ingestion
-* Config versioning and update mechanism
-* Dashboard development for common detection scenarios
-* Health monitoring and tamper detection
+- Alerting based on key security events
+- Expanded Windows Event Log ingestion
+- Config versioning and update mechanism
+- Dashboard development for common detection scenarios
+- Health monitoring and tamper detection
