@@ -440,10 +440,15 @@ function Uninstall-AlloyIfBroken {
         }
     }
 
-    $uninstallExeCandidates = @(
-        (Join-Path $env:ProgramFiles "GrafanaLabs\Alloy\uninstall.exe"),
-        (Join-Path ${env:ProgramFiles(x86)} "GrafanaLabs\Alloy\uninstall.exe")
-    ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+    $uninstallExeCandidates = @()
+    if ($env:ProgramFiles) {
+        $uninstallExeCandidates += (Join-Path $env:ProgramFiles "GrafanaLabs\Alloy\uninstall.exe")
+    }
+    if (${env:ProgramFiles(x86)}) {
+        $uninstallExeCandidates += (Join-Path ${env:ProgramFiles(x86)} "GrafanaLabs\Alloy\uninstall.exe")
+    }
+
+    $uninstallExeCandidates = $uninstallExeCandidates | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
 
     $uninstalled = $false
 
@@ -477,10 +482,15 @@ function Uninstall-AlloyIfBroken {
 
         Start-Sleep -Seconds 3
 
-        $pathsToRemove = @(
-            (Join-Path $env:ProgramFiles "GrafanaLabs\Alloy"),
-            (Join-Path ${env:ProgramFiles(x86)} "GrafanaLabs\Alloy")
-        ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
+        $pathsToRemove = @()
+        if ($env:ProgramFiles) {
+            $pathsToRemove += (Join-Path $env:ProgramFiles "GrafanaLabs\Alloy")
+        }
+        if (${env:ProgramFiles(x86)}) {
+            $pathsToRemove += (Join-Path ${env:ProgramFiles(x86)} "GrafanaLabs\Alloy")
+        }
+
+        $pathsToRemove = $pathsToRemove | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
 
         foreach ($path in $pathsToRemove) {
             try {
@@ -540,7 +550,23 @@ function Install-OrUpdate-Alloy {
         }
 
         Write-Host "Installing Alloy silently..."
-        Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait -NoNewWindow
+        $proc = Start-Process -FilePath $installerPath -ArgumentList "/S" -PassThru
+
+        if (-not $proc.WaitForExit(180000)) {
+            try {
+                $proc.Kill()
+            }
+            catch {
+            }
+            throw "Alloy installer timed out after 180 seconds."
+        }
+
+        Write-Host "Alloy installer exit code: $($proc.ExitCode)"
+
+        if ($proc.ExitCode -ne 0) {
+            throw "Alloy installer failed with exit code $($proc.ExitCode)"
+        }
+
         Start-Sleep -Seconds 5
     }
     else {
