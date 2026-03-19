@@ -85,7 +85,7 @@ This project is intended to:
 ---
 
 ## Current Drawbacks
- - Currently has a test Loki IP hardcoded into the **param block (lines x - x)**
+ - Currently has a test Loki IP hardcoded into the **param block (line 2)**
 
 ---
 
