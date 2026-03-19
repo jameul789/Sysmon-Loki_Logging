@@ -1,7 +1,7 @@
 param(
     [string]$LokiHost = "192.168.100.138",
     [int]$LokiPort = 3100,
-    [string]$SysmonConfigUrl = "https://raw.githubusercontent.com/jameul789/Sysmon-Loki_Logging/refs/heads/main/configs/Sysmon",
+    [string]$SysmonConfigUrl = "https://raw.githubusercontent.com/jameul789/Sysmon-Loki_Logging/main/configs/sysmon-caspian.xml",
     [int]$SysmonInstallAttempts = 3,
     [int]$HttpRetryCount = 12,
     [int]$HttpRetryDelaySeconds = 5,
