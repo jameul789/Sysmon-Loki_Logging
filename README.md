@@ -85,7 +85,9 @@ This project is intended to:
 ---
 
 ## Current Drawbacks
- - Currently has a test Loki IP hardcoded into the **param block (line 2)**
+ - Currently has a test Loki IP address hardcoded into the **param block (line 2)**
+   This can prove to be an issue as Loki hosts will most likely have a different IP address.
+   Current solution is to edit the IP address in the script to the same as Loki host IP address
 
 ---
 
