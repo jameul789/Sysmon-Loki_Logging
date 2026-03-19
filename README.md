@@ -64,13 +64,13 @@ Each endpoint performs the following:
 
 - A server capable of running:
 
-  - Grafana
-  - Loki
+  ~ Grafana
+  ~ Loki
 - Loki accessible over the network (default port: `3100`)
 - Windows endpoints with:
 
-  - Administrator privileges
-  - Network access to the Loki instance
+  ~ Administrator privileges
+  ~ Network access to the Loki instance
 
 ---
 
