@@ -84,6 +84,11 @@ This project is intended to:
 
 ---
 
+## Current Drawbacks
+ - Currently has a test Loki IP hardcoded into the **param block (lines x - x)**
+
+---
+
 ## Future Improvements
 
 - Alerting based on key security events
